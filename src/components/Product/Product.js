@@ -6,43 +6,50 @@ import Button from '../Button/Button';
 
 const Product = props => {
 
-console.log('props', props.colors);
-
   Product.propTypes = {
-    id: PropTypes.number,
-    name: PropTypes.string,
-    title: PropTypes.string,
-    basePrice: PropTypes.number,
-    // color: PropTypes.array,
-    // sizes: PropTypes.array
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    basePrice: PropTypes.number.isRequired,
+    color: PropTypes.array.isRequired,
+    sizes: PropTypes.array.isRequired
   }
  
-  const [currentColor, setCurrentColor] = useState(0);
-  const [currentSize, setCurrentSize] = useState(0);
-  const [isActive, setActive] = useState(false);
-
-  function handleClick() {
-     setActive(true);
-    //  setCurrentSize == 0;
-  };
+  const [currentColor, setCurrentColor] = useState(props.colors[0]);
+  const [currentSize, setCurrentSize] = useState(props.sizes[0].name);
+  const [currentPrice, setCurrentPrice] = useState(props.basePrice);
 
   const prepareColorClassName = color => {
     return styles['color' + color[0].toUpperCase() + color.substr(1).toLowerCase()];
   }
 
-  console.log('size', currentSize);
+  const getPrice = price => {
+    return setCurrentPrice(props.basePrice + price);
+  }
+
+  const prepareSummary = props => {
+    return console.log(
+        'SUMMARY\n',
+        '=======\n',
+        'NAME: ',props.title, '\n',
+        'PRICE: ',currentPrice, '\n',
+        'SIZE: ', currentSize, '\n',
+        'COLOR: ', currentColor, '\n',
+        )
+    }
+
   return (
     <article className={styles.product}>
       <div className={styles.imageContainer}>
         <img 
           className={styles.image}
           alt={props.title}
-          src={`${process.env.PUBLIC_URL}/images/products/shirt-${props.name}--${props.colors[currentColor]}.jpg`} />
+          src={`${process.env.PUBLIC_URL}/images/products/shirt-${props.name}--${currentColor}.jpg`} />
       </div>
       <div>
         <header>
           <h2 className={styles.name}>{props.title}</h2>
-          <span className={styles.price}>Price: {props.basePrice}$</span>
+          <span className={styles.price}>Price: {currentPrice}$</span>
         </header>
         <form>
           <div className={styles.sizes}>
@@ -50,22 +57,30 @@ console.log('props', props.colors);
             <ul className={styles.choices}>
               {props.sizes.map((size, index) => 
               <li key={index}>
-                <button type="button" onClick={() => setCurrentSize(index)} className={clsx(index === currentSize && styles.active)}>{size.name}</button>
+                <button type="button" onClick={() => {
+                  setCurrentSize(size.name);
+                  getPrice(size.additionalPrice);
+                }} 
+                className={clsx(size.name === currentSize && styles.active)}>{size.name}</button>                  
               </li>)}
             </ul>
           </div>
           <div className={styles.colors}>
             <h3 className={styles.optionLabel}>Colors</h3>
             <ul className={styles.choices}>
-             {props.colors.map((item, index) => 
+             {props.colors.map((item) => 
                 <li key={item}>
-                  <button type="button" onClick={() => setCurrentColor(index)} className={clsx(prepareColorClassName(item), index === currentColor && styles.active)} />
+                  <button type="button" onClick={() => setCurrentColor(item)} className={clsx(prepareColorClassName(item), item === currentColor && styles.active)} />
                 </li> 
               )}
             </ul>
           </div>
-          <Button className={styles.button}>
-            <span className="fa fa-shopping-cart" />
+          <Button className={styles.button} 
+          onClick={(e) => {
+            e.preventDefault();
+            prepareSummary(props)
+          }}>
+            <span className='fa fa-shopping-cart' />
           </Button>
         </form>
       </div>
